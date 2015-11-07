@@ -1,3 +1,5 @@
+{# Any header field used in the CSV file can be used in this template #}
+{# Sample Jinja2 template file #}
 no service pad
 service timestamps debug datetime localtime
 service timestamps log datetime localtime
@@ -72,7 +74,9 @@ switchport mode trunk
 !
 int range gi1/0/1 - 28
 switch access vlan {{ vlan_id_4 }}
-! Maybe put a IF/THEN to check for voice_vlan_id?
+!
+{# Maybe put a IF/THEN to check for voice_vlan_id? #}
+!
 switchport voice vlan {{ voice_vlan_id }}
 auto qos voip trust
 !
