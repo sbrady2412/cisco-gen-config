@@ -1,0 +1,135 @@
+no service pad
+service timestamps debug datetime localtime
+service timestamps log datetime localtime
+service password-encryption
+service compress-config
+!
+hostname {{ hostname }}
+!
+logging buffered 214748364
+enable secret 5 $1$8DVa$1pOMVWYVlhFaqTD82zFiU/
+!
+username admin privilege 15 password 7 114D091C1413400F0C79397D71
+aaa new-model
+!
+!
+aaa authentication login default local
+!
+!
+!
+!
+!
+!
+aaa session-id common
+clock timezone EST -5 0
+clock summer-time EDT recurring
+!
+stack-power stack 1
+!
+no ip domain-lookup
+ip domain-name lourdes.edu
+!
+crypto key generate rsa mod 1024
+!
+vtp mode transparent
+udld enable
+!
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+spanning-tree extend system-id
+spanning-tree pathcost method long
+!
+redundancy
+ mode sso
+!! Statically defined VLANs
+vlan 52
+ name AP-Mgmt
+!
+! Dynamic defined VLANs
+!
+{% for vlan_id, vlan_name in vlans.iteritems() %}
+vlan {{ vlan_id }}
+ name {{ vlan_name }}
+{% endfor %}
+!
+class-map match-any NORTEL-SIGNAL
+ match dscp cs3
+class-map match-any NORTEL-RTP
+ match dscp ef
+!
+policy-map HighData-Input-Policy
+ class NORTEL-RTP
+  set dscp ef
+ class NORTEL-SIGNAL
+  set dscp cs3
+ class class-default
+  set dscp af21
+!
+int Po1
+descr Link to Core
+switchport mode trunk
+!
+!
+int range gi1/0/1 - 28
+switch access vlan {{ vlan_id_4 }}
+! Maybe put a IF/THEN to check for voice_vlan_id?
+switchport voice vlan {{ voice_vlan_id }}
+auto qos voip trust
+!
+int range gi1/0/29 - 36
+desc Video Security
+switchport mode access
+switchport access vlan {{ vlan_id_2 }}
+!
+int range t1/0/37 - 42
+desc Access Points
+switchport mode access
+switchport access vlan 52
+!
+int range gi1/0/43 - 48
+desc HighData
+switchport mode access
+switchport access vlan {{ vlan_id_3 }}
+switchport voice vlan {{ voice_vlan_id }}
+service-policy input HighData-Input-Policy
+!
+interface range TenGigabitEthernet1/1/4, Ten3/1/4
+ switchport mode trunk
+ channel-group 1 mode active
+ service-policy output AutoQos-4.0-Output-Policy
+!
+int {{ mgmt_vlan_id }}
+ ip address {{ mgmt_vlan_ip }} {{ mgmt_vlan_mask }}
+ no shut
+!
+ip default-gateway {{ mgmt_vlan_gateway }}
+!
+ip http server
+ip http authentication local
+ip http secure-server
+!
+!
+!
+!
+!
+!
+!
+line con 0
+ privilege level 15
+ password 7 08655C570A184E141A581E5D73
+ logging synchronous
+ stopbits 1
+!
+line vty 0 4
+ privilege level 15
+ password 7 054F1616224D050A1156054B52
+ logging synchronous
+ length 0
+ transport preferred ssh
+ transport input ssh
+line vty 5 15
+ transport input none
+!
+ntp server 172.16.253.16
+!
+end
