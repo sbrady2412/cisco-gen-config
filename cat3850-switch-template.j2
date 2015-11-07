@@ -7,9 +7,9 @@ service compress-config
 hostname {{ hostname }}
 !
 logging buffered 214748364
-enable secret 5 $1$8DVa$1pOMVWYVlhFaqTD82zFiU/
+enable secret secretpass
 !
-username admin privilege 15 password 7 114D091C1413400F0C79397D71
+username admin privilege 15 password secretpass2
 aaa new-model
 !
 !
